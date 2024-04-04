@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Compression</title>
+</head>
+<body>
+    <input type="file" id="inputFile">
+    <input type="text" id="imageUrl" placeholder="Enter image URL">
+    <button id="loadBtn">Load Image</button>
+    <button id="compressBtn">Compress Image</button>
+    <button id="decompressBtn">Decompress Image</button>
+    <img id="preview" src="#" alt="Preview">
+
+    <script>
+        document.getElementById('inputFile').addEventListener('change', handleFileSelect, false);
+        document.getElementById('loadBtn').addEventListener('click', loadImage, false);
+        document.getElementById('compressBtn').addEventListener('click', compressImage, false);
+        document.getElementById('decompressBtn').addEventListener('click', decompressImage, false);
+
+        let originalImage;
+        let originalDataUrl;
+        let originalDataSize;
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                originalImage = new Image();
+                originalImage.src = event.target.result;
+                document.getElementById('preview').src = event.target.result;
+
+                originalDataUrl = event.target.result;
+                originalDataSize = event.target.result.length;
+            }
+
+            reader.readAsDataURL(file);
+        }
+
+        function loadImage() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            originalImage = new Image();
+            originalImage.crossOrigin = 'Anonymous'; // To enable CORS
+            originalImage.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = originalImage.width;
+                canvas.height = originalImage.height;
+                ctx.drawImage(originalImage, 0, 0);
+
+                originalDataUrl = canvas.toDataURL('image/jpeg');
+                document.getElementById('preview').src = originalDataUrl;
+
+                originalDataSize = originalDataUrl.length;
+            };
+            originalImage.src = imageUrl;
+        }
+
+        function compressImage() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+            ctx.drawImage(originalImage, 0, 0);
+
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.3); // 第二个参数为压缩质量，0.3表示30%质量
+            document.getElementById('preview').src = compressedDataUrl;
+
+            // 计算并打印压缩后图像大小
+            const compressedDataSize = compressedDataUrl.length;
+            const compressedDataSizeMB = compressedDataSize / (1024 * 1024);
+            console.log('压缩后图像大小：', compressedDataSizeMB.toFixed(2), 'MB');
+        }
+
+        function decompressImage() {
+            document.getElementById('preview').src = originalDataUrl;
+
+            // 计算并打印原始图像大小
+            const originalDataSizeMB = originalDataSize / (1024 * 1024);
+            console.log('原始图像大小：', originalDataSizeMB.toFixed(2), 'MB');
+        }
+    </script>
+</body>
+</html>
